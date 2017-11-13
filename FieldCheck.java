@@ -112,6 +112,8 @@ public class FieldCheck implements ActionListener, KeyListener, MouseListener
         try
         {
             fields[_index].setSize(Integer.parseUnsignedInt(size));
+            if(fields[_index].getType() == Type.DOUBLE)
+                fields[_index].setSize(fields[_index].getSize()+1);
         }
         catch(NumberFormatException e)
         {
