@@ -118,6 +118,7 @@ public class FieldCheck implements ActionListener, KeyListener, MouseListener
         catch(NumberFormatException e)
         {
             DataBaseForm.ShowMessage("범위를 넘었습니다. 다시 시도하세요");
+            frame.dispose();
         }
         EnterRecordSize.setText("");
         EnterType.setText("");

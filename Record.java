@@ -109,7 +109,6 @@ public class Record implements KeyListener
         }
         model = new DefaultTableModel(contents, head)
         {
-            //앨범 수정 막음
             @Override
             public boolean isCellEditable(int row, int column)
             {
