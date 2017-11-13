@@ -25,7 +25,6 @@ public class DataBase
     //def파일 : 1. 필드의 수 2. sort 필드, 3번째부터 3개씩 각각의 필드 내용
     private static void Load(String fileName)
     {
-        _record.set_Init();
         String dataFile = fileName.concat(".dat");
         String defFile = fileName.concat(".def");
         File file = new File(defFile);
@@ -34,7 +33,7 @@ public class DataBase
         {
             //한줄에 하나의 정보가 있기때문에 다른것 보다는 BufferedReader가 좋다고 판단
             BufferedReader br = new BufferedReader(new FileReader(file));
-
+            _record.set_Init();
             //def의 처음 내용은 필드의 수
             int count = Integer.parseInt(br.readLine());
             _fieldCount = count;
@@ -140,7 +139,9 @@ public class DataBase
             _record.set_currentRec(_record.get_first());
             _form.setModel();
         }
-        catch(IOException e) { }
+        catch(IOException e) {
+            DataBaseForm.ShowMessage("지정된 파일을 찾을 수 없습니다.");
+        }
     }
 
     //필드 정보를 정의 한 파일 하나, 레코드 정의 파일 하나 생성
