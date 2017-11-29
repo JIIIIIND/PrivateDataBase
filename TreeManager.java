@@ -14,10 +14,36 @@ public class TreeManager {
         return _instance;
     }
 
-    private void addNode(TreeNode newNode, TreeNode current)
+    public void PrintInorder(TreeNode root)
     {
-        String newString = (String)newNode.get_data(DataBase.get_sortField());
-        String curString = (String)current.get_data(DataBase.get_sortField());
+        if(root != null)
+        {
+            PrintInorder(root.get_left());
+            System.out.println("data: "+root.get_data(0));
+            PrintInorder(root.get_right());
+        }
+    }
+
+    public void add(TreeNode newNode, TreeNode root)
+    {
+        addNode(newNode, root);
+        while( !isBalanced(_root,true))
+        {
+            CheckBalance(_root);
+            Balance(_root);
+        }
+    }
+
+    public void addNode(TreeNode newNode, TreeNode root)
+    {
+        TreeNode current = root;
+        if(_root == null)
+        {
+            _root = newNode;
+            return;
+        }
+        String newString = newNode.get_data(DataBase.get_sortField()).toString();
+        String curString = current.get_data(DataBase.get_sortField()).toString();
         boolean isLeft = false;
 
         switch(DataBase.get_fields()[DataBase.get_sortField()].getType())
@@ -60,10 +86,9 @@ public class TreeManager {
             else
                 current.set_right(newNode);
         }
-        //밸런스 깨진 부분이 완전히 없어질때까지 반복시키는 함수 추가 바람
-        BalanceCal(_root);
-        //밸런스 깨진 부분 찾아서 수정하는 메소드 추가 바람
+        Balance(_root);
     }
+
 
     private TreeNode RightRotate(TreeNode root)
     {
@@ -72,7 +97,7 @@ public class TreeManager {
         temp.set_right(root);
         return temp;
     }
-    
+
     private TreeNode LeftRotate(TreeNode root)
     {
         TreeNode temp = root.get_right();
@@ -81,82 +106,46 @@ public class TreeManager {
         return temp;
     }
 
-    //해당 노드의 자식 노드 중 가장 높은 degree를 찾아서 반환한다.
-    private int MaxLevel(TreeNode root, int level, int Max)
+    private int Maxlevel(TreeNode root, int level, int Max)
     {
-        TreeNode p = root;
-        while(p != null)
+        if(root != null)
         {
-            switch(p.hasChild())
-            {
-                case 0:
-                    MaxLevel(p.get_left(), level+1, Max);
-                    MaxLevel(p.get_right(), level+1, Max);
-                    p = null;
-                    break;
-                case 1:
-                    p = p.get_left();
-                    level++;
-                    break;
-                case 2:
-                    p = p.get_right();
-                    level++;
-                    break;
-                case 3:
-                    if(Max < level)
-                        Max = level;
-                    p = null;
-                    break;
-            }
+            int left = Maxlevel(root.get_left(),level+1,Max);
+            int right = Maxlevel(root.get_right(),level+1,Max);
+            if(left > right)
+                Max = left+1;
+            else
+                Max = right+1;
         }
-        return Max;
+        else
+        {
+            if(level > Max)
+                Max = level;
+        }
+        return Max-1;
     }
 
     //root노드의 밸런스를 넣어준다.
     private void BalanceOperation(TreeNode root)
     {
-        int leftLevel = 0;
-        try {
-            leftLevel = MaxLevel(root.get_left(), 0, 0);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        int rightLevel = MaxLevel(root.get_right(),0,0);
+        int leftLevel = Maxlevel(root.get_left(), 1, 0);
+
+        int rightLevel = Maxlevel(root.get_right(),1,0);
 
         root.setBalance(leftLevel-rightLevel);
     }
 
-    //각각의 노드에 대해서 현재의 밸런스 값을 넣어준다.
-    private void BalanceCal(TreeNode root)
+    public void Balance(TreeNode root)
     {
-        TreeNode p = root;
-        while(p != null)
+        if(root != null)
         {
-            switch (p.hasChild())
-            {
-                case 0:
-                    BalanceOperation(p);
-                    BalanceCal(p.get_left());
-                    BalanceCal(p.get_right());
-                    p = null;
-                    break;
-                case 1:
-                    BalanceOperation(p);
-                    p = p.get_left();
-                    break;
-                case 2:
-                    BalanceOperation(p);
-                    p = p.get_right();
-                    break;
-                case 3:
-                    p.setBalance(0);
-                    p = null;
-                    break;
-            }
+            Balance(root.get_left());
+            BalanceOperation(root);
+            Balance(root.get_right());
         }
     }
 
-    private TreeNode Rotate(TreeNode root)
+    public TreeNode Rotate(TreeNode root)
     {
         if(root.getBalance() > 1)
         {
@@ -182,68 +171,55 @@ public class TreeManager {
                 root = (LeftRotate(root));
             }
         }
+        Balance(_root);
         return root;
     }
 
-    private void CheckBalance(TreeNode root)
+    private boolean isBalanced(TreeNode root,boolean escape)
     {
-        TreeNode p = root;
-        if(p == _root)
+        if(root != null)
         {
-            if(p.getBalance() > 1)
+            if(root.getBalance() < -1 || root.getBalance() > 1)
             {
-                //LL회전 수행
-                if(p.get_left().getBalance() != -1)
-                {
-                    _root = RightRotate(root);
-                }
-                //LR회전 수행
-                else
-                {
-                    p.set_left(LeftRotate(p.get_left()));
-                    _root = RightRotate(p);
-                }
+                escape = false;
             }
-            else if(p.getBalance() < -1)
-            {
-                if(p.get_right().getBalance() != 1)
-                {
-                    _root = LeftRotate(p);
-                }
-                else
-                {
-                    p.set_right(RightRotate(p.get_right()));
-                    _root = LeftRotate(p);
-                }
-            }
-            else return;
+            isBalanced(root.get_left(),escape);
+            isBalanced(root.get_right(),escape);
         }
-        else
-        {
-            while (p != null)
-            {
-                switch (p.hasChild())
-                {
-                    case 0:
-                        p.set_left(Rotate(p.get_left()));
-                        p.set_right(Rotate(p.get_right()));
-
-                        CheckBalance(p.get_left());
-                        CheckBalance(p.get_right());
-                        break;
-                    case 1:
-                        p.set_left(Rotate(p.get_left()));
-                        p = p.get_left();
-                        break;
-                    case 2:
-                        p.set_right(Rotate(p.get_right()));
-                        p = p.get_right();
-                        break;
-                    case 3:
-                        p = null;
-                        break;
-                }
-            }
-        }
+        return escape;
     }
+
+    public TreeNode CheckBalance(TreeNode root)
+    {
+        switch(root.hasChild())
+        {
+            case 0:
+                root.set_left(CheckBalance(root.get_left()));
+                root.set_right(CheckBalance(root.get_right()));
+                if(root == _root)
+                    _root = Rotate(root);
+                else
+                    root = Rotate(root);
+                break;
+            case 1:
+                root.set_left(CheckBalance(root.get_left()));
+                if(root == _root)
+                    _root = Rotate(root);
+                else
+                    root = Rotate(root);
+                break;
+            case 2:
+                root.set_right(CheckBalance(root.get_right()));
+                if(root == _root)
+                    _root = Rotate(root);
+                else
+                    root = Rotate(root);
+                break;
+            case 3:
+                return root;
+        }
+        return root;
+    }
+
+    public TreeNode getRoot() {return _root;}
 }
