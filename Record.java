@@ -125,6 +125,7 @@ public class Record implements KeyListener
         String pString;
         String newString;
         RecordNode old, p;
+        //레코드 입력이 처음인 경우
         if (_last == null)
         {
             newNode.set_next(null);
@@ -156,6 +157,7 @@ public class Record implements KeyListener
             {
                 newString = new String("0");
             }
+            //기존 데이터와 새로운 데이터를 비교하여 기존 데이터가 더 큰 값일 때 까지 반복한다.
             if (((type == Type.STRING) || (type == Type.CHAR)) && (pString.compareTo(
                     newString) < 0))
             {
@@ -172,8 +174,10 @@ public class Record implements KeyListener
                 old = p;
                 p = p.get_next();
             }
+            //아래는 새로운 데이터가 들어갈 위치를 찾았으니 기존 연결 방식을 변경해주는 부분이다.
             else
             {
+                //아래는 새로운 레코드의 위치가 처음이나 끝이 아닌 경우다.
                 if (p.get_prior() != null)
                 {
                     p.get_prior().set_next(newNode);
@@ -182,6 +186,7 @@ public class Record implements KeyListener
                     p.set_prior(newNode);
                     return;
                 }
+                //여기는 새 레코드의 위치가 레코드의 첫 부분인 경우다.
                 newNode.set_next(p);
                 newNode.set_prior(null);
                 p.set_prior(newNode);
@@ -189,6 +194,7 @@ public class Record implements KeyListener
                 return;
             }
         }
+        //여긴 새로운 레코드가 마지막에 위치할 경우다.
         old.set_next(newNode);
         newNode.set_next(null);
         newNode.set_prior(old);
@@ -198,7 +204,7 @@ public class Record implements KeyListener
     //Record 삭제를 수행
     private void DeleteRecord()
     {
-        //제거 레코드가 첫 레코드이고 동시에 마지막은 아님
+        //제거 레코드가 첫 레코드이고
         if (_currentRec == _first)
         {
             p = _first.get_next();
