@@ -24,9 +24,9 @@ public class TreeManager {
         }
     }
 
-    public void add(TreeNode newNode, TreeNode root)
+    public void add(TreeNode newNode)
     {
-        addNode(newNode, root);
+        addNode(newNode, _root);
         while( !isBalanced(_root,true))
         {
             CheckBalance(_root);
@@ -89,6 +89,130 @@ public class TreeManager {
         Balance(_root);
     }
 
+    public TreeNode FindHeir(TreeNode root)
+    {
+        TreeNode temp = null;
+        if((root.hasChild() == 2) || (root.hasChild() == 3))
+            return root;
+        else
+            temp = FindHeir(root.get_left());
+        return temp;
+    }
+
+    //root에서 Heir를 찾은 후 연결되는 부분을 제거한다.
+    private void HeirInit(TreeNode root, TreeNode Heir)
+    {
+        switch(root.hasChild())
+        {
+            case 0:
+                if(root.get_left() == Heir)
+                    root.set_left(null);
+                else if(root.get_right() == Heir)
+                    root.set_right(null);
+                else
+                {
+                    HeirInit(root.get_left(), Heir);
+                    HeirInit(root.get_right(), Heir);
+                }
+                break;
+            case 1:
+                if(root.get_left() == Heir)
+                    root.set_left(null);
+                else
+                    HeirInit(root.get_left(),Heir);
+                break;
+            case 2:
+                if(root.get_right() == Heir)
+                    root.set_right(null);
+                else
+                    HeirInit(root.get_right(),Heir);
+                break;
+            case 3:
+                break;
+        }
+    }
+
+    public void Delete(TreeNode del)
+    {
+        DeleteNode(del,_root);
+        Balance(_root);
+        while(!isBalanced(_root,true))
+        {
+            CheckBalance(_root);
+            Balance(_root);
+        }
+    }
+
+    private void DeleteNode(TreeNode del, TreeNode root)
+    {
+        if(del == _root)
+        {
+            _root = DeleteOperation(_root);
+            return;
+        }
+        switch(root.hasChild())
+        {
+            case 0:
+                if(del == root.get_left())
+                    root.set_left(DeleteOperation(root.get_left()));
+                else if(del == root.get_right())
+                    root.set_right(DeleteOperation(root.get_right()));
+                else
+                {
+                    DeleteNode(del,root.get_left());
+                    DeleteNode(del,root.get_right());
+                }
+                break;
+            case 1:
+                if(del == root.get_left())
+                    root.set_left(DeleteOperation(root.get_left()));
+                else
+                    DeleteNode(del,root.get_left());
+                break;
+            case 2:
+                if(del == root.get_right())
+                    root.set_right(DeleteOperation(root.get_right()));
+                else
+                    DeleteNode(del,root.get_right());
+                break;
+            case 3:
+                return;
+        }
+    }
+
+    //해당 노드를 제거한다.
+    private TreeNode DeleteOperation(TreeNode root)
+    {
+        TreeNode temp;
+        switch(root.hasChild())
+        {
+            case 0:
+                temp = FindHeir(root.get_right());
+                HeirInit(root,temp);
+                temp.set_left(root.get_left());
+                if(temp.get_right() != null)
+                    temp.get_right().set_right(root.get_right());
+                else
+                    temp.set_right(root.get_right());
+                break;
+            case 1:
+                temp = root.get_left();
+                break;
+            case 2:
+                temp = FindHeir(root.get_right());
+                HeirInit(root,temp);
+                if(temp.get_right() != null)
+                    temp.get_right().set_right(root.get_right());
+                else
+                    temp.set_right(root.get_right());
+                break;
+            default:
+                temp = null;
+                break;
+        }
+        root = null;
+        return temp;
+    }
 
     private TreeNode RightRotate(TreeNode root)
     {
@@ -179,12 +303,12 @@ public class TreeManager {
     {
         if(root != null)
         {
-            if(root.getBalance() < -1 || root.getBalance() > 1)
-            {
+            escape = isBalanced(root.get_left(),escape);
+            if(root.getBalance() > 1)
                 escape = false;
-            }
-            isBalanced(root.get_left(),escape);
-            isBalanced(root.get_right(),escape);
+            else if(root.getBalance() < -1)
+                escape = false;
+            escape = isBalanced(root.get_right(),escape);
         }
         return escape;
     }
@@ -196,28 +320,21 @@ public class TreeManager {
             case 0:
                 root.set_left(CheckBalance(root.get_left()));
                 root.set_right(CheckBalance(root.get_right()));
-                if(root == _root)
-                    _root = Rotate(root);
-                else
-                    root = Rotate(root);
                 break;
             case 1:
                 root.set_left(CheckBalance(root.get_left()));
-                if(root == _root)
-                    _root = Rotate(root);
-                else
-                    root = Rotate(root);
                 break;
             case 2:
                 root.set_right(CheckBalance(root.get_right()));
-                if(root == _root)
-                    _root = Rotate(root);
-                else
-                    root = Rotate(root);
                 break;
             case 3:
                 return root;
         }
+        if(root == _root)
+            _root = Rotate(root);
+        else
+            root = Rotate(root);
+
         return root;
     }
 
