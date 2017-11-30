@@ -7,7 +7,7 @@ public class TreeManager {
 
     private TreeManager(){}
 
-    public static TreeManager GetInstance()
+    public static TreeManager getInstance()
     {
         if(_instance == null)
             _instance = new TreeManager();
@@ -336,6 +336,52 @@ public class TreeManager {
             root = Rotate(root);
 
         return root;
+    }
+
+    //Find기능: 해당하는 노드를 반환한다. 만약 찾는 값이 없다면 null이 반환된다.
+    private TreeNode FindSorting(String Key, int index)
+    {
+        TreeNode t = _root;
+        while( !Key.matches(t.get_data(index).toString()))
+        {
+            if(Key.compareTo(t.get_data(index).toString()) > 0)
+            {
+                t = t.get_right();
+            }
+            else if(Key.compareTo(t.get_data(index).toString()) < 0)
+            {
+                t = t.get_left();
+            }
+            else if(Key.compareTo(t.get_data(index).toString()) == 0)
+            {
+                return t;
+            }
+            if(t == null)
+            {
+                return null;
+            }
+        }
+        return t;
+    }
+
+    private TreeNode FindNonSorting(String Key, int index, TreeNode root)
+    {
+        TreeNode temp;
+        if(root != null)
+        {
+            if(Key.matches(root.get_data(index).toString()))
+            {
+                temp = root;
+                return temp;
+            }
+            temp = FindNonSorting(Key, index, root.get_left());
+            if(temp != null)
+                return temp;
+            temp = FindNonSorting(Key, index, root.get_right());
+            if(temp != null)
+                return temp;
+        }
+        return null;
     }
 
     public TreeNode getRoot() {return _root;}
