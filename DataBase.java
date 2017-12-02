@@ -13,6 +13,7 @@ public class DataBase
 
     private static Field[] _fields;
 
+    private static TreeManager _manager;
     private static Record _record;
     private static DataBaseForm _form;
 
@@ -20,6 +21,7 @@ public class DataBase
     {
         _record = Record.getInstance();
         _form = new DataBaseForm();
+        _manager = TreeManager.getInstance();
     }
 
     //def파일 : 1. 필드의 수 2. sort 필드, 3번째부터 3개씩 각각의 필드 내용
@@ -33,7 +35,7 @@ public class DataBase
         {
             //한줄에 하나의 정보가 있기때문에 다른것 보다는 BufferedReader가 좋다고 판단
             BufferedReader br = new BufferedReader(new FileReader(file));
-            _record.set_Init();
+            _record.set_Init(TreeManager.getInstance().getRoot());
             //def의 처음 내용은 필드의 수
             int count = Integer.parseInt(br.readLine());
             _fieldCount = count;
@@ -91,13 +93,13 @@ public class DataBase
             //레코드 입력 시작
             while(!isLast)
             {
-                RecordNode p = new RecordNode();
+                TreeNode t = new TreeNode();
                 for(int index = 0; index < _fieldCount; index++) {
                     String line = br.readLine();
                     if((line != null) && (line.length() > _fields[index].getSize()))
                     {
                         DataBaseForm.ShowMessage("사이즈보다 큰 값이 입력되어 있습니다.");
-                        _record.set_Init();
+                        _record.set_Init(TreeManager.getInstance().getRoot());
                         set_fields(null);
                         return;
                     }
@@ -111,21 +113,21 @@ public class DataBase
                         }
                         if (_fields[index].getType() == Type.STRING)
                         {
-                            p.set_data(line);
+                            t.set_data(line);
                         }
                         else if (_fields[index].getType() == Type.CHAR)
                         {
-                            p.set_data(line.charAt(0));
+                            t.set_data(line.charAt(0));
                         }
                         else if (_fields[index].getType() == Type.INT)
                         {
                             int value = Integer.parseInt(line);
-                            p.set_data(value);
+                            t.set_data(value);
                         }
                         else
                         {
                             double value = Double.parseDouble(line);
-                            p.set_data(value);
+                            t.set_data(value);
                         }
                     }
                     catch (NumberFormatException error)
@@ -134,9 +136,9 @@ public class DataBase
                         return;
                     }
                 }
-                if(!isLast) _record.setDlsStore(p);
+                if(!isLast) _record.addNode(t);
             }
-            _record.set_currentRec(_record.get_first());
+            _record.set_currentRec(_record.getRoot());
             _form.setModel();
         }
         catch(IOException e) {
@@ -147,7 +149,7 @@ public class DataBase
     //필드 정보를 정의 한 파일 하나, 레코드 정의 파일 하나 생성
     private static void Save(String fileName)
     {
-        RecordNode temp = _record.get_first();
+        TreeNode temp = _record.getRoot();
 
         String dataFile = fileName.concat(".dat");
         String defFile = fileName.concat(".def");
@@ -155,16 +157,8 @@ public class DataBase
         try
         {
             PrintWriter pw = new PrintWriter(file);
-            //마지막 레코드까지 반복
-            for(int index = 0; temp != null; index++)
-            {
-                //필드의 개수만큼 레코드의 정보 입력
-                for(int i = 0; i < _fieldCount; i++)
-                {
-                    pw.println(temp.get_data(i));
-                }
-                temp = temp.get_next();
-            }
+            //DataBase.SaveTreeData(pw, _record.getRoot());
+            _manager.Save(pw, _record.getRoot());
             pw.close();
 
             file = new File(defFile);
